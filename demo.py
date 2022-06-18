@@ -80,6 +80,7 @@ window = pg.Window("File Viewer", layout)
 
 # Step 4: Event loop
 folder_location = ""
+all_files = []                  # empty list to store all the files of the directory
 
 while True:    
     event, values = window.read()  
@@ -97,7 +98,8 @@ while True:
             if os.path.isfile(os.path.join(folder_location, file)) and 
             file.lower().endswith((".pdf", ".csv"))             # only certain file types
         ]        
-        window["-FILE_LIST-"].update(file_names)    
+        window["-FILE_LIST-"].update(file_names)
+        all_files = file_names                                 # list of all the files in the directory
     
     if event == "-FILE_LIST-" and len(values["-FILE_LIST-"]) > 0:        
         file_selection = values["-FILE_LIST-"][0]     
@@ -110,6 +112,11 @@ while True:
     # Open the selected file's directory
     if event == "Open File Location" and len(values["-FILE_LIST-"]) > 0:
         os.startfile(os.path.join(folder_location))
+
+    # Open all the files in the directory
+    if event == "Open All Files":
+        for file in all_files:
+            os.startfile(os.path.join(folder_location, file))
 
 # Step 5: Close window
 window.close()
