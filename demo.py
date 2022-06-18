@@ -1,18 +1,29 @@
 import PySimpleGUI as pg
 import os
+import pandas as pd
+from pathlib import Path
 
-# Step 1: Set theme
+
+# Set theme
 pg.theme("SystemDefault1")
 
-# Step 2: Create layout
-file_list_column = [    
-    [        
-        pg.Text("Folder"),        
-        pg.In(size=(30, 1), 
+
+# Create layout
+file_list_column = [      
+    [
+        pg.Input(
+        "",
+        size=(30, 1), 
         enable_events=True, 
-        key="-FOLDER-"),        
-        pg.FolderBrowse(),    
-    ],    
+        key="-INPUT-"
+        ),
+        pg.Button
+        (
+            "Search", 
+            pad=(10, 10),
+            size=(10, 1),
+        )
+    ], 
     [        
         pg.Listbox(            
             values=[],            
@@ -75,48 +86,99 @@ layout = [
     ]
 ]
 
-# Step 3: Create Window
-window = pg.Window("File Viewer", layout)
 
-# Step 4: Event loop
-folder_location = ""
-all_files = []                  # empty list to store all the files of the directory
+# Home directory
+homeFolder = Path.home()
 
+# OneDrive directory
+oneDriveFolder = os.path.join(homeFolder, 'OneDrive')
+
+
+# Trace function to search data excel file
+def trace(number):
+    # Traceability Data excel file directory
+    df = pd.read_excel(os.path.join(oneDriveFolder, 'Traceability Data', 'Traceability Data.xlsx'))
+
+    # Dictionary to store information
+    temp = {}
+
+    # Get Work Order number
+    WO = number                                             
+    temp['Work Order'] = f'WO{WO}'
+
+    # Get row index of work order
+    rowIndex = df[df['Work Order']==WO].index.item()
+
+    # Get DO using rowIndex and update dictionary
+    DO = df.loc[rowIndex, 'DO']
+    temp['DO'] = DO
+
+    # Get PO using rowIndex and update dictionary
+    PO = df.loc[rowIndex, 'PO']
+    temp['PO'] = PO
+
+    # Get Batch Number using rowIndex and update dictionary
+    # batchNumber = df.loc[rowIndex, 'Batch Number']
+    # temp['Batch Number'] = batchNumber
+
+    # Get Roll ID using rowIndex and update dictionary
+    # rollID = df.loc[rowIndex, 'Roll ID']
+    # temp['Roll ID'] = rollID
+    return temp
+
+
+# Create Window
+window = pg.Window("File Viewer", layout, finalize=True)
+window['-INPUT-'].bind("<Return>", "_Enter")
+
+
+# Event loop
 while True:    
     event, values = window.read()  
     if event == pg.WIN_CLOSED:        
         break    
-    if event == "-FOLDER-":        
-        folder_location = values["-FOLDER-"]        
-        try:            
-            files = os.listdir(folder_location)        
-        except:            
-            files = []                
-            
-        file_names = [            
-            file for file in files            
-            if os.path.isfile(os.path.join(folder_location, file)) and 
-            file.lower().endswith((".pdf", ".csv"))             # only certain file types
-        ]        
-        window["-FILE_LIST-"].update(file_names)
-        all_files = file_names                                 # list of all the files in the directory
-    
+
+    # Invoke trace function when Search button is clicked or Enter is pressed
+    if event == "Search" or event == "-INPUT-" + "_Enter":
+        try:
+            temp = trace(int(values["-INPUT-"]))
+            file_names = []
+        
+            # loop through the dictionary and search directory
+            for k, v in temp.items():
+                p = Path(oneDriveFolder, k)
+                for root, dirs, files in os.walk(p):
+                    for file in files:
+                        if file == f"{v}.pdf":
+                            file_names.append(file)       
+            window["-FILE_LIST-"].update(file_names)
+        except:
+            files = []
+          
+    # Show path directory of the selected file
     if event == "-FILE_LIST-" and len(values["-FILE_LIST-"]) > 0:        
-        file_selection = values["-FILE_LIST-"][0]     
-        window["-TOUT-"].update(os.path.join(folder_location, file_selection)) 
+        file_selection = values["-FILE_LIST-"][0]  
+        for k, v in temp.items():
+            if file_selection == f"{v}.pdf":
+                window["-TOUT-"].update(Path(oneDriveFolder, k, file_selection))
  
     # Open the selected file
     if event == "Open File" and len(values["-FILE_LIST-"]) > 0:
-        os.startfile(os.path.join(folder_location, file_selection))
+        for k, v in temp.items():
+            if file_selection == f"{v}.pdf":
+                os.startfile(os.path.join(oneDriveFolder, k, file_selection))
 
     # Open the selected file's directory
     if event == "Open File Location" and len(values["-FILE_LIST-"]) > 0:
-        os.startfile(os.path.join(folder_location))
+        for k, v in temp.items():
+            if file_selection == f"{v}.pdf":
+                os.startfile(os.path.join(oneDriveFolder, k))
 
     # Open all the files in the directory
     if event == "Open All Files":
-        for file in all_files:
-            os.startfile(os.path.join(folder_location, file))
+        for k, v in temp.items():
+            os.startfile(os.path.join(oneDriveFolder, k, f"{v}.pdf"))   
 
-# Step 5: Close window
+
+# Close window
 window.close()
