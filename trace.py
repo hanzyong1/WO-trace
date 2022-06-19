@@ -1,5 +1,6 @@
 import PySimpleGUI as pg
 import os
+from numpy import pad
 import pandas as pd
 from pathlib import Path
 
@@ -21,14 +22,14 @@ file_list_column = [
         (
             "Search", 
             pad=(10, 10),
-            size=(10, 1),
+            size=(8, 1),
         )
     ], 
     [        
         pg.Listbox(            
             values=[],            
             enable_events=True,            
-            size=(50, 30),            
+            size=(40, 20),            
             key="-FILE_LIST-",
         )    
     ]
@@ -38,51 +39,55 @@ file_viewer_column = [
     [
         pg.Text
         (
-            "Choose a file from the list", 
-            size=(50, 1),
-            pad=(10, 20)
+            "Type Work Order number and Search", 
+            size=(50, 2),
+            pad=(0 ,0),
+            key="-DESC-"
         )
     ],    
     [
         pg.Text
         (
-            "File name: ", 
-            size=(50, 2), 
-            pad=(10, 20),
+            "File path: ", 
+            size=(50, 1), 
+            pad=(0, 10),
             key="-TOUT-"
         )
     ],    
     [
+        pg.Text
+        (
+            "",
+            size=(50, 13),
+            pad=(0, 10),
+            key="-MISSING-"
+        )
+    ],
+    [
         pg.Button
         (
             "Open File", 
-            pad=(10, 20),
             size=(10, 2),
-        )
-    ],
-    [
+        ),
         pg.Button
         (
             "Open File Location", 
-            pad=(10, 20),
+            pad=(50, 0),
             size=(10, 2),
-        )
-    ],
-    [
+        ),
         pg.Button
         (
             "Open All Files", 
-            pad=(10, 20),
             size=(10, 2),
         )
-    ],
+    ]
 ]
 
 layout = [    
     [        
         pg.Column(file_list_column),        
         pg.VSeperator(),        
-        pg.Column(file_viewer_column)    
+        pg.Column(file_viewer_column, expand_y=True, pad=((5, 0), (15, 0)))    
     ]
 ]
 
@@ -97,7 +102,7 @@ oneDriveFolder = os.path.join(homeFolder, 'OneDrive')
 # Trace function to search data excel file
 def trace(number):
     # Traceability Data excel file directory
-    df = pd.read_excel(os.path.join(oneDriveFolder, 'Traceability Data', 'Traceability Data.xlsx'))
+    df = pd.read_excel(os.path.join(oneDriveFolder, 'Traceability', 'Traceability Data.xlsx'))
 
     # Dictionary to store information
     temp = {}
@@ -128,7 +133,7 @@ def trace(number):
 
 
 # Create Window
-window = pg.Window("File Viewer", layout, finalize=True)
+window = pg.Window("Work Order Trace", layout, finalize=True, size=(750, 400))
 window['-INPUT-'].bind("<Return>", "_Enter")
 
 
@@ -152,6 +157,7 @@ while True:
                         if file == f"{v}.pdf":
                             file_names.append(file)       
             window["-FILE_LIST-"].update(file_names)
+            window["-DESC-"].update("This list does not contain Customer PO, MRF and Mass Balance")
         except:
             files = []
           
@@ -176,8 +182,11 @@ while True:
 
     # Open all the files in the directory
     if event == "Open All Files":
-        for k, v in temp.items():
-            os.startfile(os.path.join(oneDriveFolder, k, f"{v}.pdf"))   
+        try:
+            for k, v in temp.items():
+                os.startfile(os.path.join(oneDriveFolder, k, f"{v}.pdf"))   
+        except:
+            files = []
 
 
 # Close window
