@@ -1,6 +1,5 @@
 import PySimpleGUI as pg
 import os
-from numpy import pad
 import pandas as pd
 from pathlib import Path
 
@@ -109,26 +108,29 @@ def trace(number):
 
     # Get Work Order number
     WO = number                                             
-    temp['Work Order'] = f'WO{WO}'
 
     # Get row index of work order
-    rowIndex = df[df['Work Order']==WO].index.item()
+    if WO in df["Work Order"].values:
+        rowIndex = df[df['Work Order']==WO].index.item()
+        temp['Work Order'] = f'WO{WO}'
+    else:
+        temp['Work Order'] = 'Not Found'
+        return temp
 
     # Get DO using rowIndex and update dictionary
-    DO = df.loc[rowIndex, 'DO']
-    temp['DO'] = DO
+    if pd.isnull(df.loc[rowIndex, 'DO']):
+        temp['DO'] = 'Not Found'
+    else:
+        DO = df.loc[rowIndex, 'DO']
+        temp['DO'] = int(DO)
 
     # Get PO using rowIndex and update dictionary
-    PO = df.loc[rowIndex, 'PO']
-    temp['PO'] = PO
+    if pd.isnull(df.loc[rowIndex, 'PO']):
+        temp['PO'] = 'Not Found'
+    else:
+        PO = df.loc[rowIndex, 'PO']
+        temp['PO'] = int(PO)
 
-    # Get Batch Number using rowIndex and update dictionary
-    # batchNumber = df.loc[rowIndex, 'Batch Number']
-    # temp['Batch Number'] = batchNumber
-
-    # Get Roll ID using rowIndex and update dictionary
-    # rollID = df.loc[rowIndex, 'Roll ID']
-    # temp['Roll ID'] = rollID
     return temp
 
 
@@ -146,16 +148,20 @@ while True:
     # Invoke trace function when Search button is clicked or Enter is pressed
     if event == "Search" or event == "-INPUT-" + "_Enter":
         try:
+            window["-MISSING-"].update('')
             temp = trace(int(values["-INPUT-"]))
             file_names = []
         
             # loop through the dictionary and search directory
             for k, v in temp.items():
                 p = Path(oneDriveFolder, k)
+                if v == 'Not Found':
+                    window["-MISSING-"].update(window["-MISSING-"].get() + '\n' + f'{k} is {v}')
                 for root, dirs, files in os.walk(p):
                     for file in files:
                         if file == f"{v}.pdf":
-                            file_names.append(file)       
+                            file_names.append(file)  
+                            
             window["-FILE_LIST-"].update(file_names)
             window["-DESC-"].update("This list does not contain Customer PO, MRF and Mass Balance")
         except:
