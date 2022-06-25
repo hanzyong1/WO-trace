@@ -134,6 +134,13 @@ def trace(number):
         PO = df.loc[rowIndex, 'PO']
         temp['PO'] = int(PO)
 
+    # Get IPQC using rowIndex and update dictionary
+    if pd.isnull(df.loc[rowIndex, 'IPQC']):
+        temp['IPQC'] = 'Not Found'
+    else:
+        IPQC = df.loc[rowIndex, 'IPQC']
+        temp['IPQC'] = f'WO{int(IPQC)}' 
+
     return temp
 
 
@@ -153,8 +160,9 @@ while True:
         try:
             window["-MISSING-"].update('')
             temp = trace(int(values["-INPUT-"]))
-            file_names = []
-        
+            fileNames = []
+            filePaths = []
+
             # loop through the dictionary and search directory
             for k, v in temp.items():
                 p = Path(traceFolder, k)
@@ -163,9 +171,11 @@ while True:
                 for root, dirs, files in os.walk(p):
                     for file in files:
                         if file == f"{v}.pdf":
-                            file_names.append(file)  
-                            
-            window["-FILE_LIST-"].update(file_names)
+                            fullFile = os.path.join(root, file)
+                            filePaths.append(fullFile)
+                            fileNames.append('\\'.join(fullFile.split('\\')[-2:])) 
+                        
+            window["-FILE_LIST-"].update(fileNames)
             window["-DESC-"].update("This list does not contain Customer PO, MRF and Mass Balance")
         except:
             files = []
@@ -173,27 +183,27 @@ while True:
     # Show path directory of the selected file
     if event == "-FILE_LIST-" and len(values["-FILE_LIST-"]) > 0:        
         file_selection = values["-FILE_LIST-"][0]  
-        for k, v in temp.items():
-            if file_selection == f"{v}.pdf":
-                window["-TOUT-"].update(Path(traceFolder, k, file_selection))
+        for file in filePaths:
+            if file.endswith(file_selection):
+                window["-TOUT-"].update(file)
  
     # Open the selected file
     if event == "Open File" and len(values["-FILE_LIST-"]) > 0:
-        for k, v in temp.items():
-            if file_selection == f"{v}.pdf":
-                os.startfile(os.path.join(traceFolder, k, file_selection))
+        for file in filePaths:
+            if file.endswith(file_selection):
+                os.startfile(file)
 
     # Open the selected file's directory
     if event == "Open File Location" and len(values["-FILE_LIST-"]) > 0:
-        for k, v in temp.items():
-            if file_selection == f"{v}.pdf":
-                os.startfile(os.path.join(traceFolder, k))
+        for file in filePaths:
+            if file.endswith(file_selection):
+                os.startfile('\\'.join(file.split('\\')[:-1]))
 
     # Open all the files in the directory
     if event == "Open All Files":
         try:
-            for k, v in temp.items():
-                os.startfile(os.path.join(traceFolder, k, f"{v}.pdf"))   
+            for file in filePaths:
+                os.startfile(file)
         except:
             files = []
 
