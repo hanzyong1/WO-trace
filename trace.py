@@ -97,11 +97,14 @@ homeFolder = Path.home()
 # OneDrive directory
 oneDriveFolder = os.path.join(homeFolder, 'OneDrive')
 
+# Trace directory
+traceFolder = os.path.join(oneDriveFolder, 'Traceability')
+
 
 # Trace function to search data excel file
 def trace(number):
     # Traceability Data excel file directory
-    df = pd.read_excel(os.path.join(oneDriveFolder, 'Traceability', 'Traceability Data.xlsx'))
+    df = pd.read_excel(os.path.join(traceFolder, 'Traceability Data.xlsx'))
 
     # Dictionary to store information
     temp = {}
@@ -154,7 +157,7 @@ while True:
         
             # loop through the dictionary and search directory
             for k, v in temp.items():
-                p = Path(oneDriveFolder, k)
+                p = Path(traceFolder, k)
                 if v == 'Not Found':
                     window["-MISSING-"].update(window["-MISSING-"].get() + '\n' + f'{k} is {v}')
                 for root, dirs, files in os.walk(p):
@@ -172,25 +175,25 @@ while True:
         file_selection = values["-FILE_LIST-"][0]  
         for k, v in temp.items():
             if file_selection == f"{v}.pdf":
-                window["-TOUT-"].update(Path(oneDriveFolder, k, file_selection))
+                window["-TOUT-"].update(Path(traceFolder, k, file_selection))
  
     # Open the selected file
     if event == "Open File" and len(values["-FILE_LIST-"]) > 0:
         for k, v in temp.items():
             if file_selection == f"{v}.pdf":
-                os.startfile(os.path.join(oneDriveFolder, k, file_selection))
+                os.startfile(os.path.join(traceFolder, k, file_selection))
 
     # Open the selected file's directory
     if event == "Open File Location" and len(values["-FILE_LIST-"]) > 0:
         for k, v in temp.items():
             if file_selection == f"{v}.pdf":
-                os.startfile(os.path.join(oneDriveFolder, k))
+                os.startfile(os.path.join(traceFolder, k))
 
     # Open all the files in the directory
     if event == "Open All Files":
         try:
             for k, v in temp.items():
-                os.startfile(os.path.join(oneDriveFolder, k, f"{v}.pdf"))   
+                os.startfile(os.path.join(traceFolder, k, f"{v}.pdf"))   
         except:
             files = []
 
