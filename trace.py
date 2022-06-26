@@ -14,14 +14,15 @@ file_list_column = [
     [
         pg.Input(
         "",
-        size=(30, 1), 
+        size=(33, 1), 
+        pad=(5, (0, 10)),
         enable_events=True, 
         key="-INPUT-"
         ),
         pg.Button
         (
             "Search", 
-            pad=(10, 10),
+            pad=(10, (0, 10)),
             size=(8, 1),
         )
     ], 
@@ -29,7 +30,7 @@ file_list_column = [
         pg.Listbox(            
             values=[],            
             enable_events=True,            
-            size=(40, 20),            
+            size=(45, 25), 
             key="-FILE_LIST-",
         )    
     ]
@@ -41,7 +42,7 @@ file_viewer_column = [
         (
             "Type Work Order number and Search", 
             size=(50, 2),
-            pad=(0 ,0),
+            pad=(0, (5, 10)),
             key="-DESC-"
         )
     ],    
@@ -49,8 +50,8 @@ file_viewer_column = [
         pg.Text
         (
             "File path: ", 
-            size=(50, 1), 
-            pad=(0, 10),
+            size=(50, 2),
+            pad=(0, 0),
             key="-TOUT-"
         )
     ],    
@@ -58,8 +59,8 @@ file_viewer_column = [
         pg.Text
         (
             "",
-            size=(50, 13),
-            pad=(0, 10),
+            size=(50, 16),
+            pad=(0, 0),
             key="-MISSING-"
         )
     ],
@@ -72,7 +73,7 @@ file_viewer_column = [
         pg.Button
         (
             "Open File Location", 
-            pad=(50, 0),
+            pad=(60, 0),
             size=(10, 2),
         ),
         pg.Button
@@ -85,9 +86,9 @@ file_viewer_column = [
 
 layout = [    
     [        
-        pg.Column(file_list_column),        
+        pg.Column(file_list_column, expand_y=True),         
         pg.VSeperator(),        
-        pg.Column(file_viewer_column, expand_y=True, pad=((5, 0), (15, 0)))    
+        pg.Column(file_viewer_column, expand_y=True)    
     ]
 ]
 
@@ -146,7 +147,7 @@ def trace(number):
 
 
 # Create Window
-window = pg.Window("Work Order Trace", layout, finalize=True, size=(750, 400))
+window = pg.Window("Work Order Trace", layout, finalize=True, size=(800, 420))
 window['-INPUT-'].bind("<Return>", "_Enter")
 
 
@@ -177,7 +178,7 @@ while True:
                             fileNames.append('\\'.join(fullFile.split('\\')[-2:])) 
                         
             window["-FILE_LIST-"].update(fileNames)
-            window["-DESC-"].update("This list does not contain Customer PO, MRF and Mass Balance")
+            window["-DESC-"].update("This list does not contain Customer PO, MRF, Mass Balance and CCP")
         except:
             files = []
           
