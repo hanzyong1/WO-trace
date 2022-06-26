@@ -127,14 +127,14 @@ def trace(number):
         temp['DO'] = 'Not Found'
     else:
         DO = df.loc[rowIndex, 'DO']
-        temp['DO'] = int(DO)
+        temp['DO'] = str(int(DO))
 
     # Get PO using rowIndex and update dictionary
     if pd.isnull(df.loc[rowIndex, 'PO']):
         temp['PO'] = 'Not Found'
     else:
         PO = df.loc[rowIndex, 'PO']
-        temp['PO'] = int(PO)
+        temp['PO'] = str(int(PO))
 
     # Get IPQC using rowIndex and update dictionary
     if pd.isnull(df.loc[rowIndex, 'IPQC']):
@@ -161,13 +161,16 @@ while True:
     if event == "Search" or event == "-INPUT-" + "_Enter":
         try:
             window["-MISSING-"].update('')
+            window["-FILE_LIST-"].update('')
             temp = trace(int(values["-INPUT-"]))
             fileNames = []                              # File names and folders to be displayed
             filePaths = []                              # Full paths of files
+            print(temp)
 
             # loop through the dictionary and search directory
             for k, v in temp.items():
                 p = Path(traceFolder, k)
+                print(p)
                 if v == 'Not Found':
                     window["-MISSING-"].update(window["-MISSING-"].get() + '\n' + f'{k} is {v}')
                 for root, dirs, files in os.walk(p):
