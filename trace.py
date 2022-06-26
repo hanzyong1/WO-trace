@@ -2,6 +2,7 @@ import PySimpleGUI as pg
 import os
 import pandas as pd
 from pathlib import Path
+import re
 
 
 # Set theme
@@ -160,8 +161,8 @@ while True:
         try:
             window["-MISSING-"].update('')
             temp = trace(int(values["-INPUT-"]))
-            fileNames = []
-            filePaths = []
+            fileNames = []                              # File names and folders to be displayed
+            filePaths = []                              # Full paths of files
 
             # loop through the dictionary and search directory
             for k, v in temp.items():
@@ -170,7 +171,7 @@ while True:
                     window["-MISSING-"].update(window["-MISSING-"].get() + '\n' + f'{k} is {v}')
                 for root, dirs, files in os.walk(p):
                     for file in files:
-                        if file == f"{v}.pdf":
+                        if re.search(v, file):
                             fullFile = os.path.join(root, file)
                             filePaths.append(fullFile)
                             fileNames.append('\\'.join(fullFile.split('\\')[-2:])) 
